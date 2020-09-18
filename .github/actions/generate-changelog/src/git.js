@@ -46,14 +46,22 @@ const getReleaseCommits = client => ({ sha, issue }) => {
         repo: issue.repo
     }
     
-    const getCommitsByLastTag = ({ data: [{ commit }] }) => {
+    const getAllCommits = ({ data }) => {
+        console.log('DATA', JSON.stringify(data, null, 4))
+        const buildCommitObject = ({ data: { commits } }) => commits.map(({ sha, commit }) => ({ sha, message: commit.message }))        
+
+        if (!data || data.length === 0) {
+            return client.repos.listCommits(extractTagsPayload)
+                .then(buildCommitObject)
+        }
+        
         return client.repos.compareCommits({ base: commit.sha, head: sha, ...extractTagsPayload })
-        .then(({ data: { commits } }) => commits.map(({ sha, commit }) => ({ sha, message: commit.message })))
+            .then(buildCommitObject)
     }
 
     return Bluebird.resolve(extractTagsPayload)
         .then(client.repos.listTags)
-        .then(getCommitsByLastTag)
+        .then(getAllCommits)
 }
 
 module.exports = { 
