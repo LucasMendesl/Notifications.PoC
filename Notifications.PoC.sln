@@ -7,8 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D476E997-A26
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications.PoC", "src\Notifications.PoC\Notifications.PoC.csproj", "{E7FBB942-A587-4BB0-AABD-8AD6D419FB26}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications.PoC.Test", "Notifications.PoC.Test\Notifications.PoC.Test.csproj", "{2668D5D4-D428-486D-AF58-66E825B58AE5}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B8FB8137-CABD-435F-905E-D1FE2DBF1A0A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications.PoC.Test", "test\Notifications.PoC.Test\Notifications.PoC.Test.csproj", "{AF7463B2-20D3-46A0-99CC-AFC70CDA7A17}"
