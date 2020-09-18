@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>Notifications.PoC</PackageId>
+    <Product>Notifications.PoC</Product>
+    <Title>Notifications.PoC</Title>
+    <PackageVersion>0.0.1</PackageVersion>
+    <Authors>Lucas Mendes Loureiro</Authors>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>An abstraction to send notifications</Description>
+    <Copyright>Copyright © 2020 Lucas Mendes Loureiro</Copyright>
+    <PackageProjectUrl>https://github.com/LucasMendesl/Notifications.PoC</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/LucasMendesl/Notifications.PoC</RepositoryUrl>
+    <PackageLicense>https://github.com/LucasMendesl/Notifications.PoC/blob/master/LICENSE</PackageLicense>
+    <Version>0.0.1</Version>
+    <AssemblyVersion>0.0.1.0</AssemblyVersion>
+    <FileVersion>0.0.1.0</FileVersion>
+    <PackageTags>Notifications PoC Email PushNotification SMS</PackageTags>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="RestSharp" Version="106.11.5" />
+    <PackageReference Include="RestSharp.Newtonsoft.Json" Version="1.5.1" />
+  </ItemGroup>
+
+</Project>
