@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_VERSION: 2.2.110
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - name: Building changelog action
+        run: |
+          cd .github/actions/generate-changelog
+          npm i
+  
+      - name: Create or update changelog file
+        id: changelog
+        uses: ./.github/actions/generate-changelog 
+
+      - name: Setup Dotnet ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Create NuGet Package
+        run: |
+          dotnet build --configuration Release
+          dotnet pack --configuration Release
+
+      - name: Create Github Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        with:
+          tag_name: ${{ steps.changelog.outputs.tagVersion }}
+          release_name: ${{ steps.changelog.outputs.releaseName }}
+          body:  ${{ steps.changelog.outputs.releaseNotes }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}  
+          asset_path: ./src/Notifications.PoC/bin/Release/Notifications.PoC.${{ steps.changelog.outputs.newVersion }}.nupkg
+          asset_name: Notifications.PoC.${{ steps.changelog.outputs.newVersion }}.nupkg
+          asset_content_type: application/octet-stream
+
+      - name: Publish NuGet Package
+        run: |
+          dotnet nuget push src/Notifications.PoC/bin/Release/Notifications.PoC.${{ steps.changelog.outputs.newVersion }}.nupkg -k ${{ secrets.NUGET_KEY }} -s https://api.nuget.org/v3/index.json
