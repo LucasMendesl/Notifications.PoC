@@ -49,5 +49,5 @@ jobs:
 
       - name: Generate coverage report
         run : |
-          cd ./test/FluentValidation.Extensions.Br.Test/
+          cd ./test/Notifications.PoC.Test
           dotnet test
