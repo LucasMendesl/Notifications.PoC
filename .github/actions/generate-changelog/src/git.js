@@ -1,7 +1,6 @@
 const Bluebird = require('bluebird')
 const formatCommit = require('./formatter')
 
-
 const { exec } = require('child_process')
 const { 
     GITHUB_REPOSITORY, 
@@ -23,7 +22,7 @@ const execCommand = (command, options = {}) => {
 
 const createTaggedCommit = ({ releaseCommitMessageFormat, tagPrefix }, actionContext) => newVersion => {
     const currentTag = `${tagPrefix}${newVersion}`
-    const message = formatCommit(releaseCommitMessageFormat, currentTag)
+    const message = releaseCommitMessageFormat.replace(/{{currentTag}}/g, currentTag)
 
     return Bluebird.all([        
         execCommand(`config user.name "${actionContext.getInput('git-name')}"`),
@@ -47,10 +46,12 @@ const getReleaseCommits = client => ({ sha, issue }) => {
     }
     
     const getAllCommits = ({ data }) => {
-        console.log('DATA', JSON.stringify(data, null, 4))
-        const buildCommitObject = ({ data: { commits } }) => commits.map(({ sha, commit }) => ({ sha, message: commit.message }))        
+        const buildCommitObject = ({ data }) => {
+            console.log('data', JSON.stringify(data, null, 4))
+            return data.commits.map(({ sha, commit }) => ({ sha, message: commit.message }))            
+        }        
 
-        if (!data || data.length === 0) {
+        if (data.length === 0) {
             return client.repos.listCommits(extractTagsPayload)
                 .then(buildCommitObject)
         }
