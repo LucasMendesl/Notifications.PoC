@@ -39,30 +39,26 @@ const createTaggedCommit = ({ releaseCommitMessageFormat, tagPrefix }, actionCon
     .tap(() => actionContext.info(`changelog and tags pushed with success 🙏🙏`))
 }
 
+const getLastCommits = (client, sha, listCommitsPaylod) => ({ data }) => {
+    if (data.length === 0) {
+        return client.repos.listCommits(listCommitsPaylod)
+            .then(({ data: commits }) => commits.map(({ sha, commit }) => ({ sha, message: commit.message })))
+    }
+    
+    const [{ commit }] = data
+    return client.repos.compareCommits({ base: commit.sha, head: sha, ...extractTagsPayload })
+        .then(({ data: { commits } }) => commits.map(({ sha, commit }) => ({ sha, message: commit.message })))
+}
+
 const getReleaseCommits = client => ({ sha, issue }) => {    
     const extractTagsPayload = {
         owner: issue.owner,
         repo: issue.repo
     }
     
-    const getAllCommits = ({ data }) => {
-        const buildCommitObject = ({ data }) => {
-            console.log('data', JSON.stringify(data, null, 4))
-            return data.commits.map(({ sha, commit }) => ({ sha, message: commit.message }))            
-        }        
-
-        if (data.length === 0) {
-            return client.repos.listCommits(extractTagsPayload)
-                .then(buildCommitObject)
-        }
-        
-        return client.repos.compareCommits({ base: commit.sha, head: sha, ...extractTagsPayload })
-            .then(buildCommitObject)
-    }
-
     return Bluebird.resolve(extractTagsPayload)
         .then(client.repos.listTags)
-        .then(getAllCommits)
+        .then(getLastCommits(client, sha, extractTagsPayload))
 }
 
 module.exports = { 
