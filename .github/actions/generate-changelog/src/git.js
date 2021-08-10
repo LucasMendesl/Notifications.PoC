@@ -50,10 +50,10 @@ const getLastCommits = (client, sha, listCommitsPaylod) => ({ data }) => {
         .then(({ data: { commits } }) => commits.map(({ sha, commit }) => ({ sha, message: commit.message })))
 }
 
-const getReleaseCommits = client => ({ sha, repository }) => {    
+const getReleaseCommits = client => ({ sha, payload: { repository: { name, owner } } }) => {    
     const extractTagsPayload = {
-        owner: repository.owner.name,
-        repo: repository.name
+        owner: owner.name,
+        repo: name
     }
     
     return Bluebird.resolve(extractTagsPayload)
