@@ -25,7 +25,7 @@ const generateChangelog = (context, action, client) => {
         .tap(newVersion => action.info(`bump version to ${newVersion} 😜😜😜`))
         .then(createOrUpdateChangelog(action, config))
         .tap(() => action.info(`changelog file generated, prepare push 😘😘😘`))
-        //.tap(createTaggedCommit(config, action))
+        .tap(createTaggedCommit(config, action))
         .then(newVersion => action.info(`Changelog generated with success to version ${newVersion} 🎉🎉🎉`))
         .catch(error => action.setFailed(`An error ocurrs when generate changelog\n${error.message}\n${error.stack} 😭😭😭`))
 }

@@ -46,7 +46,7 @@ const getLastCommits = (client, sha, listCommitsPaylod) => ({ data }) => {
     }
     
     const [{ commit }] = data
-    return client.repos.compareCommits({ base: commit.sha, head: sha, ...extractTagsPayload })
+    return client.repos.compareCommits({ base: commit.sha, head: sha, ...listCommitsPaylod })
         .then(({ data: { commits } }) => commits.map(({ sha, commit }) => ({ sha, message: commit.message })))
 }
 
