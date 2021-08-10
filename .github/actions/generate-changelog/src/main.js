@@ -16,7 +16,7 @@ const buildBumpArgs = (context, action) => commits => ({
 
 const generateChangelog = (context, action, client) => {
     console.log('context..')
-    console.log(context)
+    console.log(JSON.stringify(context, null, 4))
     return Bluebird.resolve(context)
         .then(getReleaseCommits(client))
         .tap(() => action.info('PR commits retrived, bump file version 😁😁😁'))
