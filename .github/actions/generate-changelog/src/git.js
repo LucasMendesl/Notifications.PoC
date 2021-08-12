@@ -41,12 +41,18 @@ const createTaggedCommit = ({ releaseCommitMessageFormat, tagPrefix }, actionCon
 
 const getLastCommits = (client, sha, listCommitsPaylod) => ({ data }) => {
     if (data.length === 0) {
-        return client.repos.listCommits(listCommitsPaylod)
-            .then(({ data: commits }) => commits.map(({ sha, commit }) => ({ sha, message: commit.message })))
+        console.log('obter os commits sem uma ref de tag')
+        return Bluebird.resolve()
+            .then(() => client.repos.listCommits(listCommitsPaylod))
+            .tap(({ data: commits }) => console.log(`Commits: ${JSON.stringify(commits, null, 4)}`))        
+            .then(({ data: commits }) => commits.map(({ sha, commit }) => ({ sha, message: commit.message })))            
     }
     
     const [{ commit }] = data
+
+    console.log(`commit ref: ${JSON.stringify(commit, null, 4)}`)
     return client.repos.compareCommits({ base: commit.sha, head: sha, ...listCommitsPaylod })
+        .tap(({ data: commits }) => console.log(`Commits: ${JSON.stringify(commits, null, 4)}`))
         .then(({ data: { commits } }) => commits.map(({ sha, commit }) => ({ sha, message: commit.message })))
 }
 
