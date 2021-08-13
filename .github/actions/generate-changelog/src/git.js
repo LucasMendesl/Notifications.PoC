@@ -1,12 +1,13 @@
 const Bluebird = require('bluebird')
-const formatCommit = require('./formatter')
 
+const { Readable } = require('stream')
 const { exec } = require('child_process')
 const { 
     GITHUB_REPOSITORY, 
     GITHUB_REF 
 } = process.env
 
+const PULL_REQUEST_COMMIT_REGEX = /#[1-9][\d]*/g
 const execAsync = Bluebird.promisify(exec)
 
 const execCommand = (command, options = {}) => {
@@ -41,19 +42,15 @@ const createTaggedCommit = ({ releaseCommitMessageFormat, tagPrefix }, actionCon
 
 const getLastCommits = (client, sha, listCommitsPaylod) => ({ data }) => {
     if (data.length === 0) {
-        console.log('obter os commits sem uma ref de tag')
         return Bluebird.resolve()
-            .then(() => client.repos.listCommits(listCommitsPaylod))
-            .tap(({ data: commits }) => console.log(`Commits: ${JSON.stringify(commits, null, 4)}`))        
-            .then(({ data: commits }) => commits.map(({ sha, commit }) => ({ sha, message: commit.message })))            
+            .then(() => client.repos.listCommits(listCommitsPaylod))        
+            .then(({ data: commits }) => commits.map(({ sha, commit, committer }) => ({ sha, message: commit.message, committer })))            
     }
     
     const [{ commit }] = data
 
-    console.log(`commit ref: ${JSON.stringify(commit, null, 4)}`)
     return Bluebird.resolve()
         .then(() => client.repos.compareCommits({ base: commit.sha, head: sha, ...listCommitsPaylod }))
-        .tap(({ data: commits }) => console.log(`Commits: ${JSON.stringify(commits, null, 4)}`))
         .then(({ data: { commits } }) => commits.map(({ sha, commit }) => ({ sha, message: commit.message })))
 }
 
@@ -65,11 +62,27 @@ const getReleaseCommits = client => ({ sha, payload: { repository: { name, owner
     
     return Bluebird.resolve(extractTagsPayload)
         .then(client.repos.listTags)
-        .tap(data => console.log(`List tags: ${JSON.stringify(data, null, 4)}`))
         .then(getLastCommits(client, sha, extractTagsPayload))
+}
+
+const getStreamCommits = commits => {
+    const readable = new Readable({
+        objectMode: true
+    })
+
+    readable._read = function() {}
+    
+    const transformedCommits =  commits.filter(commit => !PULL_REQUEST_COMMIT_REGEX.test(commit.message))
+        .map(({ message, sha, committer }) => `${message}\n\n-hash-\n${sha}\n-gitTags-\n\n-committerDate\n${committer.date}`)
+
+    transformedCommits.forEach(item => stream.push(item)) 
+    stream.push(null)
+    
+    return readable
 }
 
 module.exports = { 
     createTaggedCommit,
-    getReleaseCommits 
+    getReleaseCommits,
+    getStreamCommits 
 }

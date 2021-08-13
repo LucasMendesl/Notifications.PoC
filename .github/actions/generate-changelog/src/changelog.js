@@ -66,7 +66,7 @@ const mergeChangelogContent = (args, newVersion) => oldContent => {
   .then(newContent => [newContent.toString('utf8') + oldContent, newContent.toString('utf8')])
 }
 
-const createOrUpdateChangelog = (actionContext, args) => newVersion => {
+const createOrUpdateChangelog = (actionContext, args) => ({ newVersion, commits }) => {
   const setOutputs = ([_, newContent]) => {
     actionContext.info('setting version and release notes outputs 🥳🥳🥳')
     actionContext.setOutput('newVersion', newVersion)

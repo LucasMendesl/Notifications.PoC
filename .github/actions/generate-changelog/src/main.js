@@ -4,7 +4,8 @@ const { bump } = require('./bumper')
 const { createOrUpdateChangelog } = require('./changelog')
 const {
     createTaggedCommit,
-    getReleaseCommits
+    getReleaseCommits,
+    getStreamCommits
 } = require('./git')
 const Bluebird = require('bluebird')
 
@@ -21,7 +22,7 @@ const generateChangelog = (context, action, client) => {
         .tap(() => action.info('PR commits retrived, bump file version 😁😁😁'))
         .then(buildBumpArgs(context, action))
         .then(bump)
-        .tap(newVersion => action.info(`bump version to ${newVersion} 😜😜😜`))
+        .tap(({ newVersion }) => action.info(`bump version to ${newVersion} 😜😜😜`))
         .then(createOrUpdateChangelog(action, config))
         .tap(() => action.info(`changelog file generated, prepare push 😘😘😘`))
         .tap(createTaggedCommit(config, action))
