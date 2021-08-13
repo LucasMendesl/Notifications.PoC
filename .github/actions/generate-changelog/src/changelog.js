@@ -33,14 +33,6 @@ const createFileIfNotExists = ({ changelogFile }) => {
        console.log('nao achei o arquivo, to escrevendo...')
        return writeFileAsync(changelogPath, '', 'utf8')
     })
-
-  // return existsAsync(changelogPath)
-  //   .tap(exist => console.log('changelog exists? ', exist))
-  //   .then(exists => exists ? Bluebird.resolve() : writeFileAsync(changelogPath, '', 'utf8'))
-  //   .catch(error => {
-  //      console.log('deu ruim na hora de ler o arquivo', JSON.stringify(error, null, 4))
-  //      return Bluebird.reject(error)
-  //   })
 }
 
 const extractOldContent = changelogFile => {
