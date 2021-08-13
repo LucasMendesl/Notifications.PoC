@@ -65,6 +65,7 @@ const getReleaseCommits = client => ({ sha, payload: { repository: { name, owner
     
     return Bluebird.resolve(extractTagsPayload)
         .then(client.repos.listTags)
+        .tap(data => console.log(`List tags: ${JSON.stringify(data, null, 4)}`))
         .then(getLastCommits(client, sha, extractTagsPayload))
 }
 

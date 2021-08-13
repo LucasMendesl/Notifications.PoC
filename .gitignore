@@ -289,3 +289,6 @@ __pycache__/
 
 # Coverage Report
 covarge_report.xml
+
+#node-testes
+node-testes/
