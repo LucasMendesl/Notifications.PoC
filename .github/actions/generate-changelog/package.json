@@ -20,7 +20,13 @@
     "conventional-changelog-preset-loader": "^2.3.4",
     "conventional-changelog-writer": "^5.0.0",
     "conventional-commits-parser": "^3.2.1",
+    "dateformat": "^4.5.1",
+    "get-pkg-repo": "^4.1.2",
     "glob": "^7.1.6",
+    "lodash": "^4.17.21",
+    "normalize-package-data": "^3.0.2",
+    "read-pkg": "^6.0.0",
+    "read-pkg-up": "^8.0.0",
     "semver": "^7.3.2",
     "stream-to-promise": "^3.0.0",
     "through2": "^4.0.2"

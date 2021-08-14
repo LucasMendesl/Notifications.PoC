@@ -42,7 +42,7 @@ const extractOldContent = changelogFile => {
   return changelogFile
 }
 
-const mergeChangelogContent = (args, newVersion) => oldContent => {
+const mergeChangelogContent = (args, newVersion, commits) => oldContent => {
   const newChangelogVersion = { version: newVersion }
   const conventionalChangelogConfig = {
     debug: console.info.bind(console, 'conventional-changelog'),
@@ -53,7 +53,8 @@ const mergeChangelogContent = (args, newVersion) => oldContent => {
   return streamToPromise(conventionalChangelog(
     conventionalChangelogConfig, 
     newChangelogVersion, 
-    { merges: null, path: args.path })
+    commits
+    )
   )
   .then(newContent => [newContent.toString('utf8') + oldContent, newContent.toString('utf8')])
 }
@@ -67,13 +68,12 @@ const createOrUpdateChangelog = (actionContext, args) => ({ newVersion, commits 
     actionContext.setOutput('releaseName', `${args.tagPrefix}${newVersion} (${new Date().toISOString().split('T').shift()})`)
   }
 
-  console.log('args: ', JSON.stringify(args, null, 4))
   return createFileIfNotExists(args)
     .then(() => readFileAsync(args.changelogFile, 'utf8'))
     .tap(content => console.log('content readed: ', content))
     .then(extractOldContent)
     .tap(content => console.log('old content: ', content))
-    .then(mergeChangelogContent(args, newVersion))
+    .then(mergeChangelogContent(args, newVersion, commits))
     .tap(items => console.log('content merged: ', items))
     .tap(([mergedContent]) => writeFileAsync(args.changelogFile, args.header + '\n' + mergedContent.replace(/\n+$/, '\n')))
     .tap(() => console.log('file content merged'))
