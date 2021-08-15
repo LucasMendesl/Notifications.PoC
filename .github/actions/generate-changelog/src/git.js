@@ -40,18 +40,32 @@ const createTaggedCommit = ({ releaseCommitMessageFormat, tagPrefix }, actionCon
     .tap(() => actionContext.info(`changelog and tags pushed with success 🙏🙏`))
 }
 
+const mergeCommitTags = taggedCommits => commits => {
+    const taggedMap = taggedCommits.map(({ name, commit: { sha } }) => ({ name, sha }))
+        .reduce((acc, curr) => {
+            acc[curr.sha] = curr.name
+            return acc
+        }, {})
+    
+    return commits.map(commit => ({
+        tag: taggedMap[commit.sha],
+        ...commit
+    }))
+}
+
 const getLastCommits = (client, sha, listCommitsPaylod) => ({ data }) => {
     if (data.length === 0) {
         return Bluebird.resolve()
             .then(() => client.repos.listCommits(listCommitsPaylod))        
-            .then(({ data: commits }) => commits.map(({ sha, commit, committer }) => ({ sha, message: commit.message, committer })))            
+            .then(({ data: { commits } }) => commits.map(({ sha, commit, committer }) => ({ sha, message: commit.message, committer })))            
     }
     
     const [{ commit }] = data
 
     return Bluebird.resolve()
         .then(() => client.repos.compareCommits({ base: commit.sha, head: sha, ...listCommitsPaylod }))
-        .then(({ data: { commits } }) => commits.map(({ sha, commit }) => ({ sha, message: commit.message })))
+        .then(({ data: { commits } }) => commits.map(({ sha, commit, committer }) => ({ sha, message: commit.message, committer })))
+        .then(mergeCommitTags(data))
 }
 
 const getReleaseCommits = client => ({ sha, payload: { repository: { name, owner } } }) => {    
@@ -62,7 +76,6 @@ const getReleaseCommits = client => ({ sha, payload: { repository: { name, owner
     
     return Bluebird.resolve(extractTagsPayload)
         .then(client.repos.listTags)
-        .tap(tags => console.log(`tags teste: ${JSON.stringify(tags, null, 4)}`))
         .then(getLastCommits(client, sha, extractTagsPayload))
 }
 
@@ -74,7 +87,7 @@ const getStreamCommits = commits => {
     readable._read = function() {}
     
     const transformedCommits =  commits.filter(commit => !PULL_REQUEST_COMMIT_REGEX.test(commit.message))
-        .map(({ message, sha, committer }) => `${message}\n\n-hash-\n${sha}\n-gitTags-\n\n-committerDate\n${committer.date}`)
+        .map(({ message, sha, committer, tag }) => `${message}\n\n-hash-\n${sha}\n-gitTags-\n ${tag ? `(tag: ${tag})` : ''}\n-committerDate\n${committer.date}\n`)
 
     transformedCommits.forEach(item => stream.push(item)) 
     stream.push(null)
