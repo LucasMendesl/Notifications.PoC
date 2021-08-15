@@ -2,7 +2,7 @@ const path = require('path')
 const Bluebird = require('bluebird')
 const streamToPromise = require('stream-to-promise')
 const spec = require('conventional-changelog-config-spec')
-const conventionalChangelog = require('conventional-changelog')
+const conventionalChangelog = require('./changelog/conventional-changelog-stream')
 const {
   statAsync, 
   readFileAsync, 
@@ -46,14 +46,17 @@ const mergeChangelogContent = (args, newVersion, commits) => oldContent => {
   const newChangelogVersion = { version: newVersion }
   const conventionalChangelogConfig = {
     debug: console.info.bind(console, 'conventional-changelog'),
+    warn: console.warn.bind(console, 'conventional-changelog'),
     preset: configurePreset(args),
     tagPrefix: args.tagPrefix
   }
 
   return streamToPromise(conventionalChangelog(
-    conventionalChangelogConfig, 
-    newChangelogVersion, 
-    commits
+      conventionalChangelogConfig, 
+      newChangelogVersion, 
+      commits,
+      {},
+      {}
     )
   )
   .then(newContent => [newContent.toString('utf8') + oldContent, newContent.toString('utf8')])

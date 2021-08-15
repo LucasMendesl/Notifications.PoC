@@ -1,27 +1,36 @@
-const through = require('through2')
 const { Readable } = require('stream')
 const { getStreamCommits } = require('../git')
+
+const through = require('through2')
+const mergeConfig = require('./merge-config')
 const conventionalCommitsParser = require('conventional-commits-parser')
 const conventionalChangelogWriter = require('conventional-changelog-writer')
 const conventionalChangelogPresetLoader = require('conventional-changelog-preset-loader')
 
 
-const conventionalChangelogStreamGenerator = (options, context, commits, parserOpts, writerOpts) => {
+const conventionalChangelogStreamGenerator = async (options, context, commits, parserOpts, writerOpts) => {
     const readable = new Readable({
         objectMode: writerOpts.includeDetails
     })
     
     readable._read = function () { }
 
+    const {
+      options: newOptions,
+      context: newContext,
+      parserOpts: newParserOpts,
+      writerOpts: newWriterOpts
+    } = await mergeConfig(options, context, parserOpts, writerOpts, commits.filter(x => !!x.tag).map(x => x.tag))
+    
     getStreamCommits(commits)
-        .pipe(conventionalCommitsParser(parserOpts))
+        .pipe(conventionalCommitsParser(newParserOpts))
         .on('error', function (err) {
             err.message = 'Error in conventional-commits-parser: ' + err.message
             setImmediate(readable.emit.bind(readable), 'error', err)
         })
         .pipe(through.obj(function (chunk, _, cb) {
             try {
-                options.transform.call(this, chunk, cb)
+                newOptions.transform.call(this, chunk, cb)
             } catch (err) {
                 cb(err)
             }
@@ -30,12 +39,12 @@ const conventionalChangelogStreamGenerator = (options, context, commits, parserO
             err.message = 'Error in options.transform: ' + err.message
             setImmediate(readable.emit.bind(readable), 'error', err)
         })
-        .pipe(conventionalChangelogWriter(context, writerOpts))
+        .pipe(conventionalChangelogWriter(newContext, newWriterOpts))
         .on('error', function (err) {
             err.message = 'Error in conventional-changelog-writer: ' + err.message
             setImmediate(readable.emit.bind(readable), 'error', err)
         })
-        .pipe(through({ objectMode: writerOpts.includeDetails }, function (chunk, _, cb) {
+        .pipe(through({ objectMode: newWriterOpts.includeDetails }, function (chunk, _, cb) {
             try { readable.push(chunk) } catch (err) { setImmediate(function () { throw err }) }            
             cb()
         }, function (cb) {

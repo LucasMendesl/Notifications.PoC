@@ -1,4 +1,3 @@
-const Q = require('q')
 const readPkg = require('read-pkg')
 const Bluebird = require('bluebird')
 const dateFormat = require('dateformat')
@@ -97,7 +96,7 @@ const mergeConfig = (options, context, parserOpts, writerOpts, gitSemverTags) =>
   const gitRemoteOriginFn = createGitRemoteOriginUrlFn()
   const gitRemoteOriginUrlPromise = Bluebird.resolve(gitRemoteOriginFn())
 
-  return Q.allSettled([configPromise, pkgPromise, gitRemoteOriginUrlPromise])
+  return Bluebird.allSettled([configPromise, pkgPromise, gitRemoteOriginUrlPromise])
     .spread(function (configObj, pkgObj, gitRemoteOriginUrlObj) {
       let config
       let pkg
@@ -203,7 +202,7 @@ const mergeConfig = (options, context, parserOpts, writerOpts, gitSemverTags) =>
         }
 
         if (type) {
-          hostOpts = require('../hosts/' + type)
+          hostOpts = require('./hosts/' + type)
 
           context = _.assign({
             issue: hostOpts.issue,
