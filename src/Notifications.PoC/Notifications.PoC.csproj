@@ -5,7 +5,7 @@
     <PackageId>Notifications.PoC</PackageId>
     <Product>Notifications.PoC</Product>
     <Title>Notifications.PoC</Title>
-    <PackageVersion>0.2.0</PackageVersion>
+    <PackageVersion>0.2.1</PackageVersion>
     <Authors>Lucas Mendes Loureiro</Authors>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -14,9 +14,9 @@
     <PackageProjectUrl>https://github.com/LucasMendesl/Notifications.PoC</PackageProjectUrl>
     <RepositoryUrl>https://github.com/LucasMendesl/Notifications.PoC</RepositoryUrl>
     <PackageLicense>https://github.com/LucasMendesl/Notifications.PoC/blob/master/LICENSE</PackageLicense>
-    <Version>0.2.0</Version>
-    <AssemblyVersion>0.2.0.1125</AssemblyVersion>
-    <FileVersion>0.2.0.1125</FileVersion>
+    <Version>0.2.1</Version>
+    <AssemblyVersion>0.2.1.1131</AssemblyVersion>
+    <FileVersion>0.2.1.1131</FileVersion>
     <PackageTags>Notifications PoC Email PushNotification SMS</PackageTags>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
