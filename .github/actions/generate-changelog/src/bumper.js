@@ -55,7 +55,10 @@ const bump = ({ globSearcherExpression, commits, context }) => {
         .then(files => Bluebird.all(files.map(readFiles)))
         .then(contents => contents.map(applyNewVersion(commits, context)))
         .tap(contents => Bluebird.all(contents.map(item => writeAsync(item.path, item.fileContent))))
-        .then(([{ newVersion }]) => newVersion)
+        .then(([{ newVersion }]) => ({
+            newVersion,
+            commits 
+        }))
 }
 
 module.exports = { bump }

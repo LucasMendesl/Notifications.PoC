@@ -33,14 +33,6 @@ const createFileIfNotExists = ({ changelogFile }) => {
        console.log('nao achei o arquivo, to escrevendo...')
        return writeFileAsync(changelogPath, '', 'utf8')
     })
-
-  // return existsAsync(changelogPath)
-  //   .tap(exist => console.log('changelog exists? ', exist))
-  //   .then(exists => exists ? Bluebird.resolve() : writeFileAsync(changelogPath, '', 'utf8'))
-  //   .catch(error => {
-  //      console.log('deu ruim na hora de ler o arquivo', JSON.stringify(error, null, 4))
-  //      return Bluebird.reject(error)
-  //   })
 }
 
 const extractOldContent = changelogFile => {
@@ -50,7 +42,7 @@ const extractOldContent = changelogFile => {
   return changelogFile
 }
 
-const mergeChangelogContent = (args, newVersion) => oldContent => {
+const mergeChangelogContent = (args, newVersion, commits) => oldContent => {
   const newChangelogVersion = { version: newVersion }
   const conventionalChangelogConfig = {
     debug: console.info.bind(console, 'conventional-changelog'),
@@ -61,12 +53,13 @@ const mergeChangelogContent = (args, newVersion) => oldContent => {
   return streamToPromise(conventionalChangelog(
     conventionalChangelogConfig, 
     newChangelogVersion, 
-    { merges: null, path: args.path })
+    commits
+    )
   )
   .then(newContent => [newContent.toString('utf8') + oldContent, newContent.toString('utf8')])
 }
 
-const createOrUpdateChangelog = (actionContext, args) => newVersion => {
+const createOrUpdateChangelog = (actionContext, args) => ({ newVersion, commits }) => {
   const setOutputs = ([_, newContent]) => {
     actionContext.info('setting version and release notes outputs 🥳🥳🥳')
     actionContext.setOutput('newVersion', newVersion)
@@ -75,13 +68,12 @@ const createOrUpdateChangelog = (actionContext, args) => newVersion => {
     actionContext.setOutput('releaseName', `${args.tagPrefix}${newVersion} (${new Date().toISOString().split('T').shift()})`)
   }
 
-  console.log('args: ', JSON.stringify(args, null, 4))
   return createFileIfNotExists(args)
     .then(() => readFileAsync(args.changelogFile, 'utf8'))
     .tap(content => console.log('content readed: ', content))
     .then(extractOldContent)
     .tap(content => console.log('old content: ', content))
-    .then(mergeChangelogContent(args, newVersion))
+    .then(mergeChangelogContent(args, newVersion, commits))
     .tap(items => console.log('content merged: ', items))
     .tap(([mergedContent]) => writeFileAsync(args.changelogFile, args.header + '\n' + mergedContent.replace(/\n+$/, '\n')))
     .tap(() => console.log('file content merged'))
