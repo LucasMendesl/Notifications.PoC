@@ -22,8 +22,20 @@ const conventionalChangelogStreamGenerator = async (options, context, commits, p
       writerOpts: newWriterOpts
     } = await mergeConfig(options, context, parserOpts, writerOpts, commits.filter(x => !!x.tag).map(x => x.tag))
     
+    console.info('merge config deu bom, obtendo o stream dos commits ', { 
+      newOptions,
+      newContext,
+      newParserOpts,
+      newWriterOpts
+    })
+
+    const streamLogging = (parserOpts) => {
+      console.info('realizando o parser dos logs...')
+      return conventionalCommitsParser(parserOpts)
+    }
+
     getStreamCommits(commits)
-        .pipe(conventionalCommitsParser(newParserOpts))
+        .pipe(streamLogging(newParserOpts))
         .on('error', function (err) {
             err.message = 'Error in conventional-commits-parser: ' + err.message
             setImmediate(readable.emit.bind(readable), 'error', err)

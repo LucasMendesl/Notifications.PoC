@@ -171,17 +171,13 @@ const mergeConfig = (options, context, parserOpts, writerOpts, gitSemverTags) =>
 
       context.version = context.version || ''
 
-      if (tagsObj.state === 'fulfilled') {
-        gitSemverTags = context.gitSemverTags = tagsObj.value
-        fromTag = gitSemverTags[options.releaseCount - 1]
-        const lastTag = gitSemverTags[0]
+      const [lastTag] = gitSemverTags
 
-        if (lastTag === context.version || lastTag === 'v' + context.version) {
-          if (options.outputUnreleased) {
-            context.version = 'Unreleased'
-          } else {
-            options.outputUnreleased = false
-          }
+      if (lastTag === context.version || lastTag === 'v' + context.version) {
+        if (options.outputUnreleased) {
+          context.version = 'Unreleased'
+        } else {
+          options.outputUnreleased = false
         }
       }
 
@@ -232,7 +228,7 @@ const mergeConfig = (options, context, parserOpts, writerOpts, gitSemverTags) =>
 
       writerOpts = _.assign({
         finalizeContext: function (context, _, _, keyCommit, originalCommits) {
-          const firstCommit = originalCommits[0]
+          const [firstCommit] = originalCommits
           const lastCommit = originalCommits[originalCommits.length - 1]
           const firstCommitHash = firstCommit ? firstCommit.hash : null
           const lastCommitHash = lastCommit ? lastCommit.hash : null
