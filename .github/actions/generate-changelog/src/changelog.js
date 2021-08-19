@@ -51,15 +51,17 @@ const mergeChangelogContent = (args, newVersion, commits) => oldContent => {
     tagPrefix: args.tagPrefix
   }
 
-  return streamToPromise(conventionalChangelog(
-      conventionalChangelogConfig, 
-      newChangelogVersion, 
-      commits,
-      {},
-      {}
-    )
+  return conventionalChangelog(
+    conventionalChangelogConfig, 
+    newChangelogVersion, 
+    commits,
+    {},
+    {}    
   )
-  .then(newContent => [newContent.toString('utf8') + oldContent, newContent.toString('utf8')])
+  .then(newContent => {
+     console.log('newContent', newContent)
+     return [newContent.toString('utf8') + oldContent, newContent.toString('utf8')]
+  })
 }
 
 const createOrUpdateChangelog = (actionContext, args) => ({ newVersion, commits }) => {
