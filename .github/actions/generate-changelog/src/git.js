@@ -66,6 +66,7 @@ const getLastCommits = (client, sha, listCommitsPaylod) => ({ data }) => {
         .then(() => client.repos.compareCommits({ base: commit.sha, head: sha, ...listCommitsPaylod }))
         .then(({ data: { commits } }) => commits.map(({ sha, commit, committer }) => ({ sha, message: commit.message, committer })))
         .then(mergeCommitTags(data))
+        .tap(items => console.log('commit_collection', items))
 }
 
 const getReleaseCommits = client => ({ sha, payload: { repository: { name, owner } } }) => {    

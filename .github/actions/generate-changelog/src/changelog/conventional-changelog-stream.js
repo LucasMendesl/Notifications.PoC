@@ -42,8 +42,10 @@ const conventionalChangelogStreamGenerator = async (options, context, commits, p
         err.message = 'Error in options.transform: ' + err.message
         setImmediate(readable.emit.bind(readable), 'error', err)
       })
-      .on('data', function(chunk) {
-         console.log('newChunk', chunk)
+      .pipe(conventionalChangelogWriter(newContext, newWriterOpts))
+      .on('error', function (err) {
+        err.message = 'Error in conventional-changelog-writer: ' + err.message
+        setImmediate(readable.emit.bind(readable), 'error', err)
       })
 
     return await streamToPromise(stream)
@@ -77,8 +79,7 @@ const conventionalChangelogStreamGenerator = async (options, context, commits, p
     //         readable.push(null)
     //         cb()
     //     }))
-
-    return readable
+    // return readable
 }
 
 const conventionalChangelog = (options, context, commits, parserOpts, writerOpts) => {
