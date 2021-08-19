@@ -57,14 +57,14 @@ const getLastCommits = (client, sha, listCommitsPaylod) => ({ data }) => {
     if (data.length === 0) {
         return Bluebird.resolve()
             .then(() => client.repos.listCommits(listCommitsPaylod))        
-            .then(({ data: { commits } }) => commits.map(({ sha, commit, committer }) => ({ sha, message: commit.message, committer, commitData: commit })))            
+            .then(({ data: { commits } }) => commits.map(({ sha, commit }) => ({ sha, message: commit.message, committer: commit.committer })))            
     }
     
     const [{ commit }] = data
 
     return Bluebird.resolve()
         .then(() => client.repos.compareCommits({ base: commit.sha, head: sha, ...listCommitsPaylod }))
-        .then(({ data: { commits } }) => commits.map(({ sha, commit, committer }) => ({ sha, message: commit.message, committer, commitData: commit })))
+        .then(({ data: { commits } }) => commits.map(({ sha, commit }) => ({ sha, message: commit.message, committer: commit.committer })))
         .then(mergeCommitTags(data))
         .tap(items => console.log('commit_collection', items))
 }
