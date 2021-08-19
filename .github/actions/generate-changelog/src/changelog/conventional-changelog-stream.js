@@ -3,18 +3,13 @@ const { getStreamCommits } = require('../git')
 
 const through = require('through2')
 const mergeConfig = require('./merge-config')
+const streamToPromise = require('stream-to-promise')
 const conventionalCommitsParser = require('conventional-commits-parser')
 const conventionalChangelogWriter = require('conventional-changelog-writer')
 const conventionalChangelogPresetLoader = require('conventional-changelog-preset-loader')
 
 
 const conventionalChangelogStreamGenerator = async (options, context, commits, parserOpts, writerOpts) => {
-    const readable = new Readable({
-        objectMode: writerOpts.includeDetails
-    })
-    
-    readable._read = function () { }
-
     const {
       options: newOptions,
       context: newContext,
@@ -29,40 +24,59 @@ const conventionalChangelogStreamGenerator = async (options, context, commits, p
       newWriterOpts
     })
 
-    const streamLogging = (parserOpts) => {
-      console.info('realizando o parser dos logs...')
-      return conventionalCommitsParser(parserOpts)
-    }
+    const stream = getStreamCommits(commits)
+      .pipe(conventionalCommitsParser(newParserOpts))
+      .on('error', function (err) {
+        err.message = 'Error in conventional-commits-parser: ' + err.message
+        setImmediate(readable.emit.bind(readable), 'error', err)
+      })
+      .pipe(through.obj(function (chunk, _, cb) {
+          try {
+              console.log('commit', chunk)
+              newOptions.transform.call(this, chunk, cb)
+          } catch (err) {
+              cb(err)
+          }
+      }))
+      .on('error', function (err) {
+        err.message = 'Error in options.transform: ' + err.message
+        setImmediate(readable.emit.bind(readable), 'error', err)
+      })
+      .on('data', function(chunk) {
+         console.log('newChunk', chunk)
+      })
 
-    getStreamCommits(commits)
-        .pipe(streamLogging(newParserOpts))
-        .on('error', function (err) {
-            err.message = 'Error in conventional-commits-parser: ' + err.message
-            setImmediate(readable.emit.bind(readable), 'error', err)
-        })
-        .pipe(through.obj(function (chunk, _, cb) {
-            try {
-                newOptions.transform.call(this, chunk, cb)
-            } catch (err) {
-                cb(err)
-            }
-        }))
-        .on('error', function (err) {
-            err.message = 'Error in options.transform: ' + err.message
-            setImmediate(readable.emit.bind(readable), 'error', err)
-        })
-        .pipe(conventionalChangelogWriter(newContext, newWriterOpts))
-        .on('error', function (err) {
-            err.message = 'Error in conventional-changelog-writer: ' + err.message
-            setImmediate(readable.emit.bind(readable), 'error', err)
-        })
-        .pipe(through({ objectMode: newWriterOpts.includeDetails }, function (chunk, _, cb) {
-            try { readable.push(chunk) } catch (err) { setImmediate(function () { throw err }) }            
-            cb()
-        }, function (cb) {
-            readable.push(null)
-            cb()
-        }))
+    return await streamToPromise(stream)
+
+    // getStreamCommits(commits)
+    //     .pipe(streamLogging(newParserOpts))
+    //     .on('error', function (err) {
+    //         err.message = 'Error in conventional-commits-parser: ' + err.message
+    //         setImmediate(readable.emit.bind(readable), 'error', err)
+    //     })
+    //     .pipe(through.obj(function (chunk, _, cb) {
+    //         try {
+    //             newOptions.transform.call(this, chunk, cb)
+    //         } catch (err) {
+    //             cb(err)
+    //         }
+    //     }))
+    //     .on('error', function (err) {
+    //         err.message = 'Error in options.transform: ' + err.message
+    //         setImmediate(readable.emit.bind(readable), 'error', err)
+    //     })
+    //     .pipe(conventionalChangelogWriter(newContext, newWriterOpts))
+    //     .on('error', function (err) {
+    //         err.message = 'Error in conventional-changelog-writer: ' + err.message
+    //         setImmediate(readable.emit.bind(readable), 'error', err)
+    //     })
+    //     .pipe(through({ objectMode: newWriterOpts.includeDetails }, function (chunk, _, cb) {
+    //         try { readable.push(chunk) } catch (err) { setImmediate(function () { throw err }) }            
+    //         cb()
+    //     }, function (cb) {
+    //         readable.push(null)
+    //         cb()
+    //     }))
 
     return readable
 }
