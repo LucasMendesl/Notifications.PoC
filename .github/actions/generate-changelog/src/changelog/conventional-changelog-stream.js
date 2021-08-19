@@ -25,27 +25,31 @@ const conventionalChangelogStreamGenerator = async (options, context, commits, p
     })
 
     const stream = getStreamCommits(commits)
+      .pipe(through.obj(function (chunk, _, cb){
+         console.log('stream_commit', chunk)
+         cb()
+      }))
       .pipe(conventionalCommitsParser(newParserOpts))
       .on('error', function (err) {
         err.message = 'Error in conventional-commits-parser: ' + err.message
-        setImmediate(readable.emit.bind(readable), 'error', err)
+        throw err
       })
       .pipe(through.obj(function (chunk, _, cb) {
-          try {
-              console.log('commit', chunk)
-              newOptions.transform.call(this, chunk, cb)
-          } catch (err) {
-              cb(err)
-          }
+        try {
+          console.log('commit', chunk)
+          newOptions.transform.call(this, chunk, cb)
+        } catch (err) {
+          cb(err)
+        }
       }))
       .on('error', function (err) {
         err.message = 'Error in options.transform: ' + err.message
-        setImmediate(readable.emit.bind(readable), 'error', err)
+        throw err
       })
       .pipe(conventionalChangelogWriter(newContext, newWriterOpts))
       .on('error', function (err) {
         err.message = 'Error in conventional-changelog-writer: ' + err.message
-        setImmediate(readable.emit.bind(readable), 'error', err)
+        throw err      
       })
 
     return await streamToPromise(stream)

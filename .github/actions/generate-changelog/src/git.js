@@ -48,7 +48,7 @@ const mergeCommitTags = taggedCommits => commits => {
         }, {})
     
     return commits.map(commit => ({
-        tag: taggedMap[commit.sha],
+        tag: `(tag: ${taggedMap[commit.sha]})` || '',
         ...commit
     }))
 }
@@ -88,7 +88,7 @@ const getStreamCommits = commits => {
     readable._read = function() {}
     
     const transformedCommits =  commits.filter(commit => !PULL_REQUEST_COMMIT_REGEX.test(commit.message))
-        .map(({ message, sha, committer, tag }) => `${message}\n\n-hash-\n${sha}\n-gitTags-\n ${tag ? `(tag: ${tag})` : ''}\n-committerDate\n${committer.date}\n`)
+        .map(({ message, sha, committer, tag }) => `${message}\n\n-hash-\n${sha}\n-gitTags-\n ${tag}\n-committerDate\n${committer.date}\n`)
 
     transformedCommits.forEach(item => readable.push(item)) 
     readable.push(null)
