@@ -89,8 +89,8 @@ const getStreamCommits = commits => {
     const transformedCommits =  commits.filter(commit => !PULL_REQUEST_COMMIT_REGEX.test(commit.message))
         .map(({ message, sha, committer, tag }) => `${message}\n\n-hash-\n${sha}\n-gitTags-\n ${tag ? `(tag: ${tag})` : ''}\n-committerDate\n${committer.date}\n`)
 
-    transformedCommits.forEach(item => stream.push(item)) 
-    stream.push(null)
+    transformedCommits.forEach(item => readable.push(item)) 
+    readable.push(null)
     
     return readable
 }
