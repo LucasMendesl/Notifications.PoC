@@ -1,11 +1,10 @@
-const { Readable } = require('stream')
 const { getStreamCommits } = require('../git')
 
 const through = require('through2')
 const mergeConfig = require('./merge-config')
 const streamToPromise = require('stream-to-promise')
 const conventionalCommitsParser = require('conventional-commits-parser')
-const conventionalChangelogWriter = require('conventional-changelog-writer')
+const conventionalChangelogWriter = require('./writer')
 const conventionalChangelogPresetLoader = require('conventional-changelog-preset-loader')
 
 
