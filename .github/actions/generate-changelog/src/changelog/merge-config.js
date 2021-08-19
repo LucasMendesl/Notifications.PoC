@@ -272,7 +272,7 @@ const mergeConfig = (options, context, parserOpts, writerOpts, gitSemverTags) =>
             }
           }
 
-          if (!_.isBoolean(context.linkCompare) && context.previousTag && context.currentTag) {
+          if (!typeof context.linkCompare === 'boolean' && context.previousTag && context.currentTag) {
             context.linkCompare = true
           }
 
